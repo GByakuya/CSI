@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đề Thi Trắc Nghiệm – Hệ Thống Số & Lưu Trữ Dữ Liệu</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --card: #243044;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --correct: #22c55e;
+    --wrong: #ef4444;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #334155;
+    --tip: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+  }
+  header h1 { font-size: 1.7rem; font-weight: 700; color: #fff; }
+  header p { color: rgba(255,255,255,0.85); margin-top: .4rem; font-size: .95rem; }
+
+  .stats-bar {
+    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    background: var(--surface); padding: .9rem 1rem; border-bottom: 1px solid var(--border);
+  }
+  .stat { text-align: center; }
+  .stat-val { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+  .stat-lbl { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+  .section-title {
+    display: flex; align-items: center; gap: .7rem;
+    margin: 2rem 0 1rem;
+    font-size: 1.15rem; font-weight: 700; color: var(--accent2);
+  }
+  .section-title span.badge {
+    background: var(--accent2); color: #fff;
+    font-size: .7rem; padding: .2rem .5rem; border-radius: 99px;
+  }
+
+  .difficulty-row { display: flex; align-items: center; gap: .5rem; margin: 1.2rem 0 .5rem; }
+  .diff-badge {
+    font-size: .7rem; font-weight: 700; padding: .2rem .7rem; border-radius: 99px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  .diff-easy { background: #064e3b; color: #6ee7b7; }
+  .diff-medium { background: #451a03; color: #fcd34d; }
+  .diff-hard { background: #450a0a; color: #fca5a5; }
+
+  .question-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.4rem 1.5rem; margin-bottom: 1.1rem;
+    transition: box-shadow .2s;
+  }
+  .question-card:hover { box-shadow: 0 4px 24px rgba(56,189,248,.08); }
+
+  .q-header { display: flex; align-items: flex-start; gap: .8rem; margin-bottom: 1rem; }
+  .q-num {
+    min-width: 2rem; height: 2rem; border-radius: 50%;
+    background: var(--accent); color: #0f172a;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .85rem; flex-shrink: 0; margin-top: .1rem;
+  }
+  .q-text { font-size: 1rem; line-height: 1.6; }
+
+  .options { display: flex; flex-direction: column; gap: .55rem; margin-top: .8rem; }
+  .opt {
+    display: flex; align-items: flex-start; gap: .7rem;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: .75rem 1rem;
+    cursor: pointer; transition: border-color .15s, background .15s;
+    font-size: .95rem; line-height: 1.5;
+  }
+  .opt:hover:not(.disabled) { border-color: var(--accent); background: #1a2c40; }
+  .opt.correct { border-color: var(--correct) !important; background: #052e16 !important; }
+  .opt.wrong   { border-color: var(--wrong) !important;   background: #2d0707 !important; }
+  .opt.disabled { cursor: default; }
+  .opt-label {
+    min-width: 1.5rem; height: 1.5rem; border-radius: 50%;
+    border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 700; color: var(--muted); flex-shrink: 0;
+  }
+  .opt.correct .opt-label { border-color: var(--correct); color: var(--correct); }
+  .opt.wrong   .opt-label { border-color: var(--wrong);   color: var(--wrong); }
+
+  .feedback {
+    display: none; margin-top: 1rem; padding: 1rem 1.1rem;
+    border-radius: 10px; font-size: .9rem; line-height: 1.6;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: #052e16; border: 1px solid #166534; }
+  .feedback.wrong-fb   { background: #2d0707; border: 1px solid #7f1d1d; }
+
+  .tip-box {
+    margin-top: .8rem; padding: .75rem 1rem;
+    background: #1c1203; border: 1px solid #78350f;
+    border-radius: 8px; font-size: .85rem; color: var(--tip);
+  }
+  .tip-box::before { content: "💡 Mẹo: "; font-weight: 700; }
+
+  .progress-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: .6rem 1rem; z-index: 100; }
+  .progress-bar { background: var(--border); border-radius: 99px; height: 8px; overflow: hidden; }
+  .progress-fill { background: linear-gradient(90deg, #38bdf8, #818cf8); height: 100%; border-radius: 99px; transition: width .4s; }
+  .progress-info { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); margin-top: .3rem; }
+
+  .reset-btn {
+    display: block; margin: 2rem auto 0;
+    background: linear-gradient(135deg,#38bdf8,#818cf8); color: #0f172a;
+    border: none; border-radius: 10px; padding: .75rem 2rem;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+  }
+  .reset-btn:hover { opacity: .9; }
+
+  .icon { font-size: 1.1rem; }
+  code { background: #1e293b; padding: .1rem .35rem; border-radius: 4px; font-family: monospace; font-size: .9em; color: #7dd3fc; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📚 Đề Thi Trắc Nghiệm</h1>
+  <p>Hệ Thống Số &amp; Lưu Trữ Dữ Liệu Máy Tính — CSI Chương 2 &amp; 3</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val" id="s-total">50</div><div class="stat-lbl">Tổng câu</div></div>
+  <div class="stat"><div class="stat-val" id="s-done">0</div><div class="stat-lbl">Đã trả lời</div></div>
+  <div class="stat"><div class="stat-val" id="s-correct">0</div><div class="stat-lbl">Đúng</div></div>
+  <div class="stat"><div class="stat-val" id="s-wrong">0</div><div class="stat-lbl">Sai</div></div>
+  <div class="stat"><div class="stat-val" id="s-score">0%</div><div class="stat-lbl">Điểm</div></div>
+</div>
+
+<div class="container" id="quiz-root"></div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="progress-info"><span id="prog-text">0 / 50 câu</span><span id="prog-score">Điểm: 0%</span></div>
+</div>
+
+<script>
+// ======================= DỮ LIỆU CÂU HỎI =======================
+const questions = [
+
+// ===== PHẦN 1: LÝ THUYẾT (5 câu) =====
+{
+  section: "LÝ THUYẾT",
+  sectionIcon: "📖",
+  difficulty: null,
+  q: "Trong hệ thống số vị trí (positional number system), điều gì xác định giá trị của một ký hiệu?",
+  opts: [
+    "Bản thân ký hiệu đó",
+    "Vị trí của ký hiệu đó trong số",
+    "Tổng số ký hiệu trong số",
+    "Hệ cơ số (base/radix)"
+  ],
+  ans: 1,
+  explain: "Trong hệ thống số vị trí, <strong>vị trí</strong> mà một ký hiệu chiếm trong số quyết định giá trị nó đại diện. Ví dụ: chữ số 2 trong 200 có giá trị gấp 10 lần chữ số 2 trong 20.",
+  tip: "Nhớ từ khóa 'positional' = vị trí. Giá trị = ký hiệu × cơ số mũ vị trí."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "ASCII chuẩn (không mở rộng) sử dụng bao nhiêu bit để mã hóa mỗi ký tự?",
+  opts: ["4 bit", "7 bit", "8 bit", "16 bit"],
+  ans: 1,
+  explain: "ASCII chuẩn dùng <strong>7 bit</strong> cho mỗi ký tự, cho phép biểu diễn 2⁷ = 128 ký tự. Extended ASCII dùng 8 bit (256 ký tự). Unicode dùng 32 bit.",
+  tip: "7 → 128 ký tự; 8 → 256 ký tự. Câu hỏi hỏi ASCII gốc = 7 bit."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Đặc điểm nào sau đây MÔ TẢ ĐÚNG về floating-point representation (biểu diễn dấu phẩy động)?",
+  opts: [
+    "Dấu thập phân cố định ở vị trí xác định",
+    "Chỉ lưu được số nguyên dương",
+    "Gồm ba phần: dấu, số mũ dịch chuyển (shifter) và phần mantissa",
+    "Không thể biểu diễn các số rất lớn"
+  ],
+  ans: 2,
+  explain: "Floating-point gồm <strong>ba phần</strong>: dấu (sign), số mũ dịch chuyển (shifter/exponent), và phần giá trị cố định (mantissa). Cấu trúc này cho phép biểu diễn được cả số rất lớn lẫn số rất nhỏ.",
+  tip: "Nhớ cấu trúc: ±mantissa × base^exponent. Ba thành phần: sign, exponent, mantissa."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Bit depth (độ sâu bit) trong lưu trữ âm thanh ảnh hưởng đến điều gì?",
+  opts: [
+    "Tần số lấy mẫu (sampling rate)",
+    "Số bit dùng để mã hóa mỗi mẫu âm thanh",
+    "Định dạng nén âm thanh",
+    "Số kênh âm thanh (stereo/mono)"
+  ],
+  ans: 1,
+  explain: "Bit depth (B) là <strong>số bit dùng để lưu mỗi mẫu</strong>. Bit rate = S × B (S là số mẫu/giây). Ví dụ: 40.000 mẫu/giây × 16 bit/mẫu = 640.000 bits/giây.",
+  tip: "Bit depth = chất lượng mỗi mẫu. Sampling rate = số lần lấy mẫu/giây. Không nhầm lẫn hai khái niệm này."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Phương pháp nào được dùng để chuyển một số thực (real) sang dạng nhị phân, đảm bảo độ chính xác cao hơn fixed-point?",
+  opts: [
+    "Sign-and-magnitude representation",
+    "Unsigned representation",
+    "Two's complement",
+    "Floating-point representation"
+  ],
+  ans: 3,
+  explain: "<strong>Floating-point</strong> được dùng để lưu số thực với độ chính xác cao hơn fixed-point. Fixed-point có thể mất độ chính xác (ví dụ 1.00234 bị lưu thành 1.00), trong khi floating-point giải quyết vấn đề này.",
+  tip: "Integer (số nguyên) → fixed-point / two's complement. Real (số thực) → floating-point."
+},
+
+// ===== PHẦN 2: BÀI TẬP – DỄ (5 câu) =====
+{
+  section: "BÀI TẬP",
+  sectionIcon: "🧮",
+  difficulty: "easy",
+  q: "Chuyển số nhị phân \\((1010)_2\\) sang thập phân:",
+  opts: ["8", "10", "12", "14"],
+  ans: 1,
+  explain: "\\((1010)_2 = 1\\times2^3 + 0\\times2^2 + 1\\times2^1 + 0\\times2^0 = 8+0+2+0 = (10)_{10}\\)",
+  tip: "Nhân từng bit với 2 mũ vị trí (đếm từ phải = 0). Cộng lại."
+},
+{
+  section: null,
+  difficulty: "easy",
+  q: "Số thập lục phân \\((F)_{16}\\) bằng bao nhiêu trong hệ thập phân?",
+  opts: ["14", "15", "16", "17"],
+  ans: 1,
+  explain: "Trong hệ hex: A=10, B=11, C=12, D=13, E=14, <strong>F=15</strong>. Đây là quy ước chuẩn.",
+  tip: "Học thuộc: A–F tương ứng 10–15. F luôn = 15."
+},
+{
+  section: null,
+  difficulty: "easy",
+  q: "Bao nhiêu bit tạo thành 1 byte?",
+  opts: ["4", "8", "16", "32"],
+  ans: 1,
+  explain: "Định nghĩa chuẩn: <strong>1 byte = 8 bit</strong>. Một nibble = 4 bit. Đây là đơn vị cơ bản nhất trong máy tính.",
+  tip: "Nhớ: 1 byte = 8 bit. Không bao giờ thay đổi trong hầu hết ngữ cảnh."
+},
+{
+  section: null,
+  difficulty: "easy",
+  q: "Chuyển \\((7)_{10}\\) sang nhị phân:",
+  opts: ["\\((0111)_2\\)", "\\((1000)_2\\)", "\\((0110)_2\\)", "\\((1001)_2\\)"],
+  ans: 0,
+  explain: "\\(7 = 4+2+1 = 2^2+2^1+2^0 = (111)_2\\). Với 4 bit: \\((0111)_2\\). Kiểm tra: \\(0+4+2+1=7\\) ✓",
+  tip: "Chia liên tiếp cho 2, ghi phần dư từ dưới lên: 7÷2=3 dư 1, 3÷2=1 dư 1, 1÷2=0 dư 1 → 111."
+},
+{
+  section: null,
+  difficulty: "easy",
+  q: "Kết quả phép NOT trên bit pattern \\(11110000\\) là gì?",
+  opts: [
+    "\\(00001111\\)",
+    "\\(11110000\\)",
+    "\\(00000000\\)",
+    "\\(11111111\\)"
+  ],
+  ans: 0,
+  explain: "Phép NOT đảo ngược từng bit: \\(1→0\\) và \\(0→1\\). Vậy \\(11110000 → 00001111\\).",
+  tip: "NOT = lật toàn bộ bit. Từng bit một: 1→0, 0→1."
+},
+
+// ===== BÀI TẬP – TRUNG BÌNH (5 câu) =====
+{
+  section: null,
+  difficulty: "medium",
+  q: "Chuyển số nhị phân \\((110.11)_2\\) sang thập phân:",
+  opts: ["6.5", "6.75", "7.25", "6.25"],
+  ans: 1,
+  explain: "\\((110.11)_2 = 1\\times2^2 + 1\\times2^1 + 0\\times2^0 + 1\\times2^{-1} + 1\\times2^{-2}\\) \\(= 4 + 2 + 0 + 0.5 + 0.25 = 6.75\\)",
+  tip: "Phần nguyên: tính bình thường. Phần lẻ: bit thứ nhất sau dấu chấm = \\(2^{-1}=0.5\\), thứ hai = \\(2^{-2}=0.25\\),..."
+},
+{
+  section: null,
+  difficulty: "medium",
+  q: "Chuyển \\((2AE)_{16}\\) sang thập phân:",
+  opts: ["686", "654", "702", "730"],
+  ans: 0,
+  explain: "\\((2AE)_{16} = 2\\times16^2 + 10\\times16^1 + 14\\times16^0\\) \\(= 2\\times256 + 10\\times16 + 14\\times1\\) \\(= 512 + 160 + 14 = 686\\)",
+  tip: "A=10, E=14. Nhân từng chữ số với \\(16^{vị\\ trí}\\) từ phải (0,1,2,...). Cộng lại."
+},
+{
+  section: null,
+  difficulty: "medium",
+  q: "Kết quả của phép AND trên \\(10011000\\) và \\(00101010\\) là:",
+  opts: [
+    "\\(10111010\\)",
+    "\\(00001000\\)",
+    "\\(00101010\\)",
+    "\\(00100010\\)"
+  ],
+  ans: 1,
+  explain: "AND: chỉ cho kết quả 1 khi CẢ HAI bit đều là 1.<br>\\(10011000\\)<br>\\(00101010\\)<br>─────────<br>\\(00001000\\)<br>Chỉ vị trí bit 3 (từ phải) có cả hai = 1.",
+  tip: "AND = tích: 1×1=1, còn lại = 0. Dùng AND để <em>mask</em> (trích xuất) các bit cụ thể."
+},
+{
+  section: null,
+  difficulty: "medium",
+  q: "Áp dụng logical left shift 1 bit lên \\(10011000\\), kết quả là:",
+  opts: [
+    "\\(01001100\\)",
+    "\\(00110001\\)",
+    "\\(00110000\\)",
+    "\\(11001100\\)"
+  ],
+  ans: 2,
+  explain: "Logical left shift: dịch tất cả bit sang trái 1 vị trí, bit trái cùng bị mất, bit phải cùng được thêm <strong>0</strong>.<br>\\(10011000 → 00110000\\)",
+  tip: "Left shift 1 = nhân 2 (với số không dấu). Bit MSB bị mất, thêm 0 vào LSB."
+},
+{
+  section: null,
+  difficulty: "medium",
+  q: "Biểu diễn số \\((-7)\\) dùng sign-and-magnitude với 8 bit là:",
+  opts: [
+    "\\(11111001\\)",
+    "\\(10000111\\)",
+    "\\(11111000\\)",
+    "\\(10000001\\)"
+  ],
+  ans: 1,
+  explain: "Sign-and-magnitude: bit trái nhất = dấu (1 = âm). Phần còn lại = giá trị tuyệt đối.<br>\\(|{-7}| = 7 = 0000111_2\\)<br>Thêm bit dấu 1: \\(\\mathbf{1}0000111\\)",
+  tip: "Sign-and-magnitude: bit đầu = 0 (dương) hoặc 1 (âm). 7 còn lại bit = giá trị tuyệt đối."
+},
+
+// ===== BÀI TẬP – KHÓ (5 câu) =====
+{
+  section: null,
+  difficulty: "hard",
+  q: "Chuyển \\((35)_{10}\\) sang nhị phân bằng phương pháp chia liên tiếp:",
+  opts: [
+    "\\((100011)_2\\)",
+    "\\((100101)_2\\)",
+    "\\((110001)_2\\)",
+    "\\((101001)_2\\)"
+  ],
+  ans: 0,
+  explain: "Chia liên tiếp cho 2:<br>35÷2 = 17 dư <strong>1</strong><br>17÷2 = 8 dư <strong>1</strong><br>8÷2 = 4 dư <strong>0</strong><br>4÷2 = 2 dư <strong>0</strong><br>2÷2 = 1 dư <strong>0</strong><br>1÷2 = 0 dư <strong>1</strong><br>Đọc phần dư từ dưới lên: \\((100011)_2\\). Kiểm tra: \\(32+2+1=35\\) ✓",
+  tip: "Chia cho 2, ghi phần dư, đọc từ DƯỚI LÊN. Kiểm tra lại bằng cách chuyển ngược."
+},
+{
+  section: null,
+  difficulty: "hard",
+  q: "Chuyển phần thập phân \\((0.625)_{10}\\) sang nhị phân:",
+  opts: [
+    "\\((0.101)_2\\)",
+    "\\((0.110)_2\\)",
+    "\\((0.011)_2\\)",
+    "\\((0.111)_2\\)"
+  ],
+  ans: 0,
+  explain: "Nhân liên tiếp với 2, lấy phần nguyên:<br>0.625×2 = <strong>1</strong>.25 → bit 1<br>0.25×2 = <strong>0</strong>.5 → bit 0<br>0.5×2 = <strong>1</strong>.0 → bit 1<br>Đọc từ trên xuống: \\((0.101)_2\\). Kiểm tra: \\(0.5+0+0.125=0.625\\) ✓",
+  tip: "Phần lẻ → nhân 2, lấy phần nguyên (0 hoặc 1), đọc từ TRÊN XUỐNG. Ngược với phần nguyên."
+},
+{
+  section: null,
+  difficulty: "hard",
+  q: "Chuyển \\((24C)_{16}\\) sang nhị phân:",
+  opts: [
+    "\\((001001001100)_2\\)",
+    "\\((001000101100)_2\\)",
+    "\\((100100001100)_2\\)",
+    "\\((001001011000)_2\\)"
+  ],
+  ans: 0,
+  explain: "Mỗi ký tự hex = 4 bit nhị phân:<br>2 → \\(0010\\)<br>4 → \\(0100\\)<br>C (=12) → \\(1100\\)<br>Ghép lại: \\((001001001100)_2\\)",
+  tip: "Hex→Binary: mỗi chữ số hex = đúng 4 bit. Học thuộc 0–F → 4-bit pattern là nhanh nhất."
+},
+{
+  section: null,
+  difficulty: "hard",
+  q: "Lấy two's complement của số nhị phân \\(00110100\\):",
+  opts: [
+    "\\(11001100\\)",
+    "\\(11001011\\)",
+    "\\(11001101\\)",
+    "\\(00110100\\)"
+  ],
+  ans: 0,
+  explain: "Two's complement: sao chép bit từ phải cho đến khi sao chép được số 1 đầu tiên, sau đó lật tất cả bit còn lại.<br>\\(00110100\\): bit từ phải: 0,0 → sao chép; gặp 1 → sao chép; lật phần còn lại:<br>\\(00110100 → 11001100\\)<br>Hoặc: flip all bits → \\(11001011\\), cộng 1 → \\(11001100\\) ✓",
+  tip: "Cách nhanh: flip toàn bộ bit rồi cộng thêm 1. Two's complement của X = -X trong hệ nhị phân."
+},
+{
+  section: null,
+  difficulty: "hard",
+  q: "Áp dụng arithmetic right shift 1 bit lên pattern \\(10011001\\) (số two's complement). Kết quả là:",
+  opts: [
+    "\\(01001100\\)",
+    "\\(11001100\\)",
+    "\\(00011001\\)",
+    "\\(11001101\\)"
+  ],
+  ans: 1,
+  explain: "Arithmetic right shift: bit MSB (trái nhất) được <strong>giữ nguyên và sao chép</strong> sang phải.<br>\\(10011001\\): MSB = 1. Dịch phải, MSB mới = 1.<br>Kết quả: \\(11001100\\). Giá trị: ≈ chia 2 (với số âm two's complement).",
+  tip: "Arithmetic right shift ≠ logical right shift. Arithmetic giữ bit dấu (MSB). Dùng cho số có dấu two's complement."
+},
+
+// ===== PHẦN 3: 30 CÂU BÀI TẬP THÊM =====
+{
+  section: "BÀI TẬP BỔ SUNG",
+  sectionIcon: "📝",
+  difficulty: null,
+  q: "Hệ cơ số (base/radix) của hệ thập lục phân (hexadecimal) là:",
+  opts: ["2", "8", "10", "16"],
+  ans: 3,
+  explain: "Hexadecimal có base = <strong>16</strong>. Dùng 16 ký hiệu: 0–9 và A–F.",
+  tip: "Hex = hexa (6) + decimal (10) = 16 ký hiệu."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "\\((1256)_8\\) trong hệ bát phân bằng bao nhiêu thập phân?",
+  opts: ["686", "700", "724", "620"],
+  ans: 0,
+  explain: "\\(1\\times8^3 + 2\\times8^2 + 5\\times8^1 + 6\\times8^0 = 512 + 128 + 40 + 6 = 686\\)",
+  tip: "Cơ số 8: nhân từng chữ số với \\(8^{vị\\ trí}\\) từ phải (0,1,2,...). Cộng lại."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Kết quả XOR của \\(10011001\\) và \\(00101110\\) ở bit thứ nhất (MSB) là:",
+  opts: ["0", "1", "Không xác định", "Phụ thuộc giá trị khác"],
+  ans: 1,
+  explain: "XOR: cho 1 khi hai bit <strong>khác nhau</strong>, cho 0 khi giống nhau. Bit MSB: 1 XOR 0 = <strong>1</strong>.",
+  tip: "XOR = 'hoặc độc quyền': giống nhau → 0, khác nhau → 1."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Phép OR trên hai bit đều là 0 cho kết quả:",
+  opts: ["0", "1", "Không xác định", "Phụ thuộc vào ngữ cảnh"],
+  ans: 0,
+  explain: "OR: chỉ cho kết quả 0 khi <strong>cả hai bit đều = 0</strong>. Bảng: 0 OR 0 = 0; 0 OR 1 = 1; 1 OR 0 = 1; 1 OR 1 = 1.",
+  tip: "OR = 'hoặc': chỉ cần một trong hai = 1 là kết quả = 1. Cả hai = 0 thì mới = 0."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Ký tự nào KHÔNG thuộc bộ ký hiệu của hệ bát phân (octal)?",
+  opts: ["5", "7", "8", "3"],
+  ans: 2,
+  explain: "Octal dùng 8 ký hiệu: S = {0, 1, 2, 3, 4, 5, 6, 7}. Ký tự <strong>8</strong> không tồn tại trong hệ octal.",
+  tip: "Octal: 0 đến 7. Thấy chữ số 8 hoặc 9 trong số → không phải octal."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Chuyển \\((52)_8\\) sang thập phân:",
+  opts: ["42", "52", "40", "44"],
+  ans: 0,
+  explain: "\\((52)_8 = 5\\times8^1 + 2\\times8^0 = 40 + 2 = (42)_{10}\\)",
+  tip: "Đây cũng là ví dụ trong bài: (2A)₁₆ = (52)₈ = (42)₁₀ — cùng một giá trị!"
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Trong lưu trữ unsigned integer (số nguyên không dấu) với 8 bit, giá trị lớn nhất có thể lưu là:",
+  opts: ["127", "128", "255", "256"],
+  ans: 2,
+  explain: "Với n = 8 bit unsigned: giá trị max = \\(2^8 - 1 = 255\\). Các bit: \\(11111111_2 = 255_{10}\\).",
+  tip: "n bit unsigned: từ 0 đến \\(2^n - 1\\). n=8 → 0 đến 255 (256 giá trị)."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Chuyển \\((24)_8\\) sang nhị phân:",
+  opts: [
+    "\\((010100)_2\\)",
+    "\\((100100)_2\\)",
+    "\\((011000)_2\\)",
+    "\\((001010)_2\\)"
+  ],
+  ans: 0,
+  explain: "Mỗi chữ số octal = 3 bit:<br>2 → \\(010\\)<br>4 → \\(100\\)<br>Ghép lại: \\((010100)_2\\). Kiểm tra: \\(16+4=20\\)... thực ra \\(010100_2 = 20_{10}\\) và \\(24_8 = 2×8+4=20_{10}\\) ✓",
+  tip: "Octal→Binary: mỗi chữ số octal = đúng 3 bit. Tương tự hex nhưng là 3 bit thay vì 4."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Sampling trong lưu trữ âm thanh có nghĩa là:",
+  opts: [
+    "Làm tròn giá trị mẫu thành số nguyên",
+    "Chọn một số hữu hạn điểm từ tín hiệu liên tục",
+    "Mã hóa mẫu thành bit pattern",
+    "Nén dữ liệu âm thanh"
+  ],
+  ans: 1,
+  explain: "<strong>Sampling</strong> = chọn một số điểm hữu hạn trên tín hiệu analog liên tục và đo giá trị tại những điểm đó. Quantization là làm tròn. Encoding là mã hóa thành bit.",
+  tip: "Sampling → Quantization → Encoding: ba bước tuần tự để số hóa âm thanh. Không nhầm lẫn."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Circular left shift (xoay trái) trên \\(10011000\\) cho kết quả:",
+  opts: [
+    "\\(00110001\\)",
+    "\\(00110000\\)",
+    "\\(01001100\\)",
+    "\\(11001000\\)"
+  ],
+  ans: 0,
+  explain: "Circular left shift: bit trái nhất (MSB) bị đẩy ra nhưng <strong>trở lại thành bit phải nhất (LSB)</strong>.<br>\\(10011000\\): MSB=1 → LSB=1, các bit còn lại dịch trái.<br>Kết quả: \\(00110001\\)",
+  tip: "Circular (rotate): bit rơi ra một đầu → quay lại đầu kia. Khác với logical shift (thêm 0)."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Chuyển \\((126)_{10}\\) sang hệ bát phân:",
+  opts: [
+    "\\((176)_8\\)",
+    "\\((162)_8\\)",
+    "\\((156)_8\\)",
+    "\\((172)_8\\)"
+  ],
+  ans: 0,
+  explain: "Chia liên tiếp cho 8:<br>126÷8 = 15 dư <strong>6</strong><br>15÷8 = 1 dư <strong>7</strong><br>1÷8 = 0 dư <strong>1</strong><br>Đọc từ dưới lên: \\((176)_8\\). Kiểm tra: \\(1×64+7×8+6=64+56+6=126\\) ✓",
+  tip: "Chia liên tiếp cho cơ số đích (ở đây là 8), đọc dư từ dưới lên. Tương tự chuyển sang binary nhưng chia cho 8."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Resolution trong lưu trữ hình ảnh (raster graphics) đề cập đến:",
+  opts: [
+    "Số màu sắc có thể hiển thị",
+    "Số pixel trên mỗi inch vuông hoặc inch tuyến tính",
+    "Định dạng nén ảnh",
+    "Kích thước file ảnh"
+  ],
+  ans: 1,
+  explain: "<strong>Resolution</strong> là tốc độ quét (scanning rate) — số pixel được ghi lại trên mỗi inch vuông hoặc tuyến tính. Resolution cao hơn = ảnh chi tiết hơn = file lớn hơn.",
+  tip: "Resolution ảnh giống sampling rate âm thanh: càng dày càng chi tiết. Đơn vị: PPI (pixels per inch) hoặc DPI."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "True-Color encoding dùng bao nhiêu bit để mã hóa một pixel?",
+  opts: ["8 bit", "16 bit", "24 bit", "32 bit"],
+  ans: 2,
+  explain: "True-Color dùng <strong>24 bit</strong> cho mỗi pixel: 8 bit cho R (đỏ), 8 bit cho G (xanh lá), 8 bit cho B (xanh lam). Tổng: 2²⁴ ≈ 16.7 triệu màu.",
+  tip: "24 bit = 3 × 8 bit = RGB. 2²⁴ ≈ 16.7 triệu màu — đủ mắt người phân biệt."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Phương pháp nén âm thanh MP3 là loại nén nào?",
+  opts: ["Lossless (không mất dữ liệu)", "Lossy (có mất dữ liệu)", "Lossless rồi mới lossy", "Không nén"],
+  ans: 1,
+  explain: "MP3 là <strong>lossy compression</strong> — loại bỏ thông tin mà tai người không nghe được. Kết quả: file nhỏ hơn nhưng không phục hồi hoàn toàn dữ liệu gốc.",
+  tip: "Lossy = mất dữ liệu nhưng file nhỏ (MP3, JPEG). Lossless = không mất dữ liệu, file lớn hơn (FLAC, PNG)."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Vector graphics khác raster graphics ở điểm nào?",
+  opts: [
+    "Vector lưu từng pixel, raster lưu hình học",
+    "Vector lưu các hình hình học, raster lưu từng pixel",
+    "Vector chỉ dùng cho video, raster cho ảnh",
+    "Vector không thể in được"
+  ],
+  ans: 1,
+  explain: "<strong>Vector</strong> lưu các hình dạng hình học (đường, hình tròn, tọa độ...). <strong>Raster/Bitmap</strong> lưu từng pixel. Vector không bị vỡ khi phóng to; raster bị vỡ.",
+  tip: "Vector = công thức toán học (scalable). Raster = lưới pixel (resolution-dependent). Logo → vector. Ảnh chụp → raster."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Chuyển \\((1A.23)_{16}\\) sang thập phân (làm tròn 3 chữ số thập phân):",
+  opts: ["26.137", "16.137", "26.035", "26.523"],
+  ans: 0,
+  explain: "\\(1\\times16^1 + A(10)\\times16^0 + 2\\times16^{-1} + 3\\times16^{-2}\\) \\(= 16 + 10 + 0.125 + 0.01171875 ≈ 26.137\\)",
+  tip: "Phần sau dấu chấm hex: chữ số thứ nhất = ÷16, thứ hai = ÷256,... Tương tự binary nhưng chia cho 16."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Unicode dùng bao nhiêu bit và cho phép bao nhiêu ký tự?",
+  opts: [
+    "16 bit – 65,536 ký tự",
+    "24 bit – 16 triệu ký tự",
+    "32 bit – hơn 4 tỷ ký tự",
+    "7 bit – 128 ký tự"
+  ],
+  ans: 2,
+  explain: "Unicode dùng <strong>32 bit</strong>, cho phép biểu diễn đến \\(2^{32}\\) ký hiệu (hơn 4 tỷ) bao gồm ký tự đồ họa và đặc biệt từ mọi ngôn ngữ. ASCII và Extended ASCII là tập con của Unicode.",
+  tip: "Unicode bao gồm ASCII. Nhớ: 7bit=ASCII, 8bit=Extended ASCII, 32bit=Unicode."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Trong sign-and-magnitude representation với 4 bit, số \\(+5\\) và \\(-5\\) được biểu diễn là:",
+  opts: [
+    "0101 và 1101",
+    "0101 và 1010",
+    "0101 và 1011",
+    "0101 và 1001"
+  ],
+  ans: 0,
+  explain: "+5: bit dấu 0, \\(|5|=101 → 0101\\)<br>-5: bit dấu 1, \\(|5|=101 → 1101\\)<br>Sign-and-magnitude chỉ thay bit dấu, phần giá trị giữ nguyên.",
+  tip: "Sign-and-magnitude: chỉ đổi bit dấu (MSB). 0=dương, 1=âm. Phần còn lại = |giá trị|."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Bit rate khi lưu âm thanh với 40.000 mẫu/giây và 16 bit/mẫu là:",
+  opts: ["320.000 bit/s", "640.000 bit/s", "1.280.000 bit/s", "40.000 bit/s"],
+  ans: 1,
+  explain: "Bit rate R = S × B = 40.000 × 16 = <strong>640.000 bit/giây</strong> = 640 Kbps.",
+  tip: "Công thức: R = Sampling rate × Bit depth. Nhân thẳng, đơn giản."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Khi lưu số nguyên 7 dùng unsigned 8-bit, kết quả là:",
+  opts: [
+    "\\(00000111\\)",
+    "\\(00000110\\)",
+    "\\(10000111\\)",
+    "\\(01110000\\)"
+  ],
+  ans: 0,
+  explain: "\\(7_{10} = (111)_2\\). Thêm 5 bit 0 phía trước để đủ 8 bit: \\(00000111\\).",
+  tip: "Unsigned: không có bit dấu. Chỉ cần đổi sang binary rồi thêm 0 vào bên trái cho đủ số bit."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Overflow trong unsigned 4-bit xảy ra khi cố lưu số lớn hơn:",
+  opts: ["7", "15", "31", "255"],
+  ans: 1,
+  explain: "Với 4-bit unsigned: max = \\(2^4 - 1 = 15\\). Bất kỳ số nào > 15 sẽ gây overflow.",
+  tip: "n-bit unsigned max = \\(2^n - 1\\). n=4 → max=15. n=8 → max=255."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Định dạng JPEG dùng kỹ thuật mã hóa màu nào?",
+  opts: ["Indexed Color (256 màu)", "True-Color (24 bit)", "Monochrome (2 màu)", "Grayscale (8 bit)"],
+  ans: 1,
+  explain: "JPEG dùng <strong>True-Color scheme</strong> (24 bit/pixel) rồi nén ảnh để giảm dung lượng. GIF mới dùng indexed color.",
+  tip: "JPEG → True-Color + lossy compression. GIF → Indexed Color (256 màu). PNG → lossless."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Phép XOR có thể dùng để làm gì trong lập trình?",
+  opts: [
+    "Đặt (set) một bit thành 1",
+    "Lật (toggle/flip) các bit cụ thể",
+    "Xóa (clear) một bit về 0",
+    "Sao chép bit từ mẫu này sang mẫu khác"
+  ],
+  ans: 1,
+  explain: "XOR với mask 1 sẽ <strong>lật bit</strong>: 0 XOR 1 = 1, 1 XOR 1 = 0. Để SET bit → dùng OR. Để CLEAR bit → dùng AND với NOT.",
+  tip: "Nhớ: AND = clear, OR = set, XOR = toggle/flip. Ba phép toán bit quan trọng nhất."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Hệ thập phân (decimal) có nguồn gốc từ từ Latin nào?",
+  opts: ["bini", "octo", "decem", "hex"],
+  ans: 2,
+  explain: "'Decimal' xuất phát từ tiếng Latin <strong>decem</strong> (nghĩa là mười). Binary từ 'bini', octal từ 'octo', hexadecimal từ 'hex' (Hy Lạp) + 'decem'.",
+  tip: "Kiến thức lịch sử: decem=10, bini=2, octo=8, hex=6 (Hy Lạp)."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Video trong máy tính là biểu diễn của:",
+  opts: [
+    "Một hình ảnh tĩnh duy nhất",
+    "Chuỗi âm thanh ghép lại",
+    "Chuỗi các frame (hình ảnh) thay đổi theo thời gian",
+    "Dữ liệu văn bản mã hóa"
+  ],
+  ans: 2,
+  explain: "Video = <strong>chuỗi các frame</strong> hiển thị nối tiếp nhau tạo ảo giác chuyển động. Video thay đổi cả trong không gian (mỗi frame) và thời gian (các frame nối tiếp).",
+  tip: "Video = nhiều ảnh/giây. Frame rate (fps) quyết định độ mượt. 24fps = phim, 60fps = game."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Trong phép arithmetic right shift, điều gì xảy ra với bit dấu (MSB)?",
+  opts: [
+    "Bị xóa và thêm 0 vào phải",
+    "Bị giữ nguyên và sao chép sang phải",
+    "Bị di chuyển sang vị trí LSB",
+    "Bị lật (flip)"
+  ],
+  ans: 1,
+  explain: "Arithmetic right shift: MSB (bit dấu) được <strong>giữ nguyên và sao chép</strong> sang vị trí kề phải. Điều này bảo toàn dấu của số two's complement khi chia đôi.",
+  tip: "Arithmetic right shift = chia 2 cho số có dấu. MSB phải được 'kéo dài' (sign extension) để giữ dấu."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "GIF khác JPEG ở điểm mã hóa màu như thế nào?",
+  opts: [
+    "GIF dùng True-Color 24-bit, JPEG dùng Indexed Color",
+    "GIF dùng Indexed Color, JPEG dùng True-Color 24-bit",
+    "Cả hai đều dùng True-Color",
+    "Cả hai đều dùng Indexed Color"
+  ],
+  ans: 1,
+  explain: "<strong>GIF</strong> dùng Indexed Color (tối đa 256 màu từ bảng màu). <strong>JPEG</strong> dùng True-Color (24-bit, ~16.7 triệu màu) với nén lossy.",
+  tip: "GIF = Indexed (256 màu) + lossless; phù hợp ảnh đồ họa, animation. JPEG = True-Color + lossy; phù hợp ảnh chụp."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Chuỗi 8 bit \\(00000000\\) đến \\(11111111\\) trong unsigned 8-bit biểu diễn phạm vi:",
+  opts: ["−128 đến 127", "0 đến 255", "−127 đến 127", "1 đến 256"],
+  ans: 1,
+  explain: "Unsigned 8-bit: không có bit dấu, phạm vi = <strong>0 đến 255</strong> (tức \\(0\\) đến \\(2^8-1\\)).",
+  tip: "Unsigned = không có dấu âm → bắt đầu từ 0. Signed two's complement 8-bit: -128 đến +127."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Quantization trong xử lý âm thanh là quá trình:",
+  opts: [
+    "Chọn các điểm mẫu từ tín hiệu",
+    "Làm tròn giá trị mẫu thực sang số nguyên gần nhất",
+    "Mã hóa giá trị mẫu thành bit pattern",
+    "Nén dữ liệu âm thanh"
+  ],
+  ans: 1,
+  explain: "<strong>Quantization</strong> = làm tròn giá trị mẫu (số thực) thành số nguyên gần nhất. Ví dụ: 17.2 → 17; 17.7 → 18. Sau đó mới encoding thành bit.",
+  tip: "Sampling → lấy mẫu; Quantization → làm tròn; Encoding → chuyển thành bit. Ba bước theo thứ tự."
+},
+{
+  section: null,
+  difficulty: null,
+  q: "Để lưu một số âm trong two's complement 8-bit, bước đầu tiên là:",
+  opts: [
+    "Đặt bit MSB = 1",
+    "Chuyển giá trị tuyệt đối sang binary rồi lấy two's complement",
+    "Trừ 256 từ số đó",
+    "Thêm bit 1 vào cuối"
+  ],
+  ans: 1,
+  explain: "Để lưu số âm trong two's complement: (1) chuyển |giá trị| sang binary, (2) lấy two's complement (flip all + cộng 1). Ví dụ: -7 → 7=00000111 → flip=11111000 → +1=<strong>11111001</strong>.",
+  tip: "Two's complement âm: flip toàn bộ bit số dương tương ứng, rồi cộng 1. Đây là cách máy tính xử lý số âm."
+}
+];
+
+// ======================= STATE =======================
+let done = 0, correct = 0, wrong = 0;
+const answered = new Array(questions.length).fill(false);
+
+// ======================= RENDER =======================
+function render() {
+  const root = document.getElementById('quiz-root');
+  root.innerHTML = '';
+
+  let lastSection = null;
+  let lastDiff = null;
+  let qIdx = 0;
+
+  questions.forEach((q, i) => {
+    if (q.section && q.section !== lastSection) {
+      const sh = document.createElement('div');
+      sh.className = 'section-title';
+      sh.innerHTML = `<span class="icon">${q.sectionIcon}</span> ${q.section} <span class="badge">${countSection(q.section)} câu</span>`;
+      root.appendChild(sh);
+      lastSection = q.section;
+      lastDiff = null;
+    }
+
+    if (q.difficulty && q.difficulty !== lastDiff) {
+      const dr = document.createElement('div');
+      dr.className = 'difficulty-row';
+      const labels = { easy: '⭐ Dễ', medium: '⭐⭐ Trung bình', hard: '⭐⭐⭐ Khó' };
+      const cls = { easy: 'diff-easy', medium: 'diff-medium', hard: 'diff-hard' };
+      dr.innerHTML = `<span class="diff-badge ${cls[q.difficulty]}">${labels[q.difficulty]}</span>`;
+      root.appendChild(dr);
+      lastDiff = q.difficulty;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `q${i}`;
+
+    card.innerHTML = `
+      <div class="q-header">
+        <div class="q-num">${i+1}</div>
+        <div class="q-text">${q.q}</div>
+      </div>
+      <div class="options" id="opts${i}">
+        ${q.opts.map((o, j) => `
+          <div class="opt" id="opt${i}_${j}" onclick="answer(${i},${j})">
+            <div class="opt-label">${String.fromCharCode(65+j)}</div>
+            <div>${o}</div>
+          </div>`).join('')}
+      </div>
+      <div class="feedback" id="fb${i}"></div>
+    `;
+    root.appendChild(card);
+  });
+
+  if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
+}
+
+function countSection(s) {
+  return questions.filter(q => q.section === s || (q.section === null && questions.indexOf(q) > questions.findIndex(qq=>qq.section===s))).length;
+}
+
+function answer(qi, choice) {
+  if (answered[qi]) return;
+  answered[qi] = true;
+  done++;
+
+  const q = questions[qi];
+  const isCorrect = choice === q.ans;
+  if (isCorrect) correct++; else wrong++;
+
+  // Style options
+  q.opts.forEach((_, j) => {
+    const el = document.getElementById(`opt${qi}_${j}`);
+    el.classList.add('disabled');
+    if (j === q.ans) el.classList.add('correct');
+    else if (j === choice) el.classList.add('wrong');
+  });
+
+  // Feedback
+  const fb = document.getElementById(`fb${qi}`);
+  fb.className = `feedback show ${isCorrect ? 'correct-fb' : 'wrong-fb'}`;
+  fb.innerHTML = `
+    <strong>${isCorrect ? '✅ Đúng!' : '❌ Sai!'}</strong> Đáp án đúng là <strong>${String.fromCharCode(65+q.ans)}</strong>.<br><br>
+    📘 <strong>Giải thích:</strong> ${q.explain}<br>
+    <div class="tip-box">${q.tip}</div>
+  `;
+
+  updateStats();
+  if (typeof MathJax !== 'undefined') MathJax.typesetPromise([fb]);
+}
+
+function updateStats() {
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-correct').textContent = correct;
+  document.getElementById('s-wrong').textContent = wrong;
+  const pct = done > 0 ? Math.round(correct/done*100) : 0;
+  document.getElementById('s-score').textContent = pct + '%';
+  const fill = Math.round(done/questions.length*100);
+  document.getElementById('prog-fill').style.width = fill + '%';
+  document.getElementById('prog-text').textContent = `${done} / ${questions.length} câu`;
+  document.getElementById('prog-score').textContent = `Điểm: ${pct}%`;
+}
+
+function resetQuiz() {
+  answered.fill(false);
+  done = 0; correct = 0; wrong = 0;
+  updateStats();
+  render();
+}
+
+render();
+updateStats();
+</script>
+
+<div class="container">
+  <button class="reset-btn" onclick="resetQuiz()">🔄 Làm lại từ đầu</button>
+</div>
+</body>
+</html>
